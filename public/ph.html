@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Videos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        h1 {
+            color: #333;
+        }
+        .video-links {
+            margin-top: 20px;
+        }
+        .video-link {
+            margin: 10px;
+            font-size: 1.2em;
+            cursor: pointer;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .video-link:hover {
+            text-decoration: underline;
+        }
+        video {
+            width: 600px;
+            height: 400px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Physics Videos</h1>
+    <div class="video-links">
+        <a class="video-link" onclick="requestCodeAndOpenVideo('v1')">Video 1 (v1)</a><br>
+        <a class="video-link" onclick="requestCodeAndOpenVideo('v2')">Video 2 (v2)</a><br>
+        <a class="video-link" onclick="requestCodeAndOpenVideo('v3')">Video 3 (v3)</a>
+    </div>
+
+    <div id="video-container"></div>
+
+    <script>
+        // Request code from the user and open the video if valid
+        function requestCodeAndOpenVideo(videoId) {
+            const code = prompt('Please enter the code to access the video:');
+            if (code) {
+                verifyCodeForVideo(code, videoId);
+            }
+        }
+
+        // Function to verify the code and allow video access
+        function verifyCodeForVideo(code, videoId) {
+            fetch('/api/verifyCode', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ code })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    alert(`Video ${videoId} unlocked!`);
+                    openVideo(videoId); // Open the video if code is valid
+                    saveCode(code); // Save the code after successful verification
+                } else if (data.error) {
+                    alert(data.error); // Show error message if code is invalid
+                }
+            })
+            .catch(error => {
+                console.error('Error verifying code:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+
+        // Function to open the video
+        function openVideo(videoId) {
+            let videoSource = '';
+            if (videoId === 'v1') {
+                videoSource = 'video1.mp4';  // Replace with your actual video path
+            } else if (videoId === 'v2') {
+                videoSource = 'video2.mp4';
+            } else if (videoId === 'v3') {
+                videoSource = 'video3.mp4';
+            }
+
+            const videoContainer = document.getElementById('video-container');
+            videoContainer.innerHTML = ` 
+                <video controls>
+                    <source src="${videoSource}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            `;
+        }
+
+        // Save code to server
+        function saveCode(code) {
+            if (code === '') {
+                alert('Please enter a code.');
+                return;
+            }
+
+            fetch('/save-code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ code })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Code saved successfully!');
+                // Clear any input field if necessary
+            })
+            .catch(error => {
+                console.error('Error saving code:', error);
+                alert('There was an error saving the code.');
+            });
+        }
+    </script>
+
+</body>
+</html>
